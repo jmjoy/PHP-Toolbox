@@ -32,14 +32,13 @@ class Filter {
         return $this;
     }
 
-    public function emptyMsg($msg='required') {
+    public function emptyMsg($msg) {
+        $this->rules[$this->curField]['emptyMsg'] = $msg;
+        return $this;
     }
 
-    public function allowEmpty($allow=false) {
-    }
-
-    public function relate($relation='and') {
-        $this->rules[$this->curField]['relation'] = $relation;
+    public function allowEmpty($allow) {
+        $this->rules[$this->curField]['allowEmpty'] = $allow;
         return $this;
     }
 
@@ -88,37 +87,14 @@ class Filter {
             }
 
             // 这个字段有验证规则
-            if (isset($ruleRow['validate']) && is_array($ruleRow['validate']) &&
-                count($ruleRow['validate'])) {
-
-                // 获取验证关系（and 或者 or）
-                $relation = 'and';
-                if (isset($ruleRow['relation'])) {
-                    $relation = $ruleRow['relation'];
-                }
-
-                // 验证
-                switch ($relation) {
-                case 'and':
-                    foreach ($ruleRow['validate'] as $validateRow) {
-                        if (!$this->validateField($inputs[$ruleKey], $validateRow)) {
-                            return false;
-                        }
+            if (isset($ruleRow['validate']) && is_array($ruleRow['validate'])) {
+                // 所有规则都通过才算验证成功
+                foreach ($ruleRow['validate'] as $validateRow) {
+                    if (!$this->validateField($inputs[$ruleKey], $validateRow)) {
+                        $this->setError($ruleKey, $validateRow['err']);
+                        return false;
                     }
-                    break;
-
-                case 'or':
-                    foreach ($ruleRow['validate'] as $validateRow) {
-                        if ($this->validateField($inputs[$ruleKey], $validateRow)) {
-                            break;
-                        }
-                    }
-                    break;
-
-                default:
-                    throw new Exception('Unknow relation of validation');
                 }
-
             }
 
             // 净化与改名该字段的输入数据
@@ -146,7 +122,33 @@ class Filter {
     }
 
     protected function validateField($value, $validateRow) {
+        // 关键的报错信息或验证方法都没有，直接说验证成功得了
+        if (!isset($validateRow['err']) || !isset($validateRow['func'])) {
+            return true;
+        }
 
+        // 获取额外参数
+        $args = array($value);
+        if (isset($validateRow['args']) && $validateRow['args'] !== null) {
+            $args = array($value);
+            if (isset($validateRow['args']) && $validateRow['args'] !== null) {
+                if (is_array($validateRow['args'])) {
+                    foreach ($validateRow['args'] as $arg) {
+                        $args[] = $arg;
+                    }
+                } else {
+                    $args[] = $row['args'];
+                }
+            }
+        }
+
+        // 验证
+        $bool = call_user_func_array($validateRow['func'], $args);
+
+        if ($validateRow['reverse']) {
+            return !$bool;
+        }
+        return $bool;
     }
 
     protected function sanitizeField($key, $value, $sanitize) {
@@ -175,7 +177,7 @@ class Filter {
 
     protected function setError($fieldName, $errMsg) {
         $this->error = array(
-            'field' =>  $filedName,
+            'field' =>  $fieldName,
             'msg'   =>  $errMsg,
         );
     }
