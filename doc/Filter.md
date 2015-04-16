@@ -1,9 +1,8 @@
-Filter - 验证与净化输入数组的过滤器
-=======
+# Filter - 验证与净化输入数组的过滤器
 
-最简单的例子
-----
-‘’’
+## 最简单的例子
+
+```php
 <?php
 
 require_once '../Filter.class.php';
@@ -17,4 +16,4 @@ if (!$filter->check()) {
     return print_r($filter->getError());
 }
 print_r($filter->getResult());
-‘’’
+```
