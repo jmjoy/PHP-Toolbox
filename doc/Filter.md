@@ -5,12 +5,11 @@
 ```php
 <?php
 
-require_once '../Filter.class.php';
+require_once '../Filter.php';
 
 $filter = new Filter();
 
-$filter->field('money')
-       ->validate('金钱不是个数字', 'is_numeric');
+$filter->field('money')->validate('金钱不是个数字', 'is_numeric');
 
 if (!$filter->check()) {
     return print_r($filter->getError());

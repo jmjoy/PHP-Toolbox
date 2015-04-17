@@ -395,4 +395,26 @@ class Filter {
         return self::regex($value, '/^1\d{10}$/');
     }
 
+    /**
+     * 验证中文长度
+     * @param mixed $value
+     * @return bool
+     */
+    public static function chLength($value, $min, $max) {
+        $reg = sprintf('/^[\x{4e00}-\x{9fa5}]{%d,%d}$/u', $min, $max);
+        if (!preg_match($reg, $value)) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 将时间戳转化成数据库时间格式
+     * @param mixed $value
+     * @return bool
+     */
+    public static function transDate($value) {
+        return date('Y-m-d H:i:s', $value);
+    }
+
 }
