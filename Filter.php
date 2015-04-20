@@ -141,7 +141,7 @@ class Filter {
                     return false;
                 }
 
-                // 不允许输入数据的字段为空，跳过验证
+                // 允许输入数据的字段为空，跳过验证
                 continue;
             }
 

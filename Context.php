@@ -1,23 +1,57 @@
 <?php
 
+/**
+ * 单个Http对话的上下文类
+ * @author JM_Joy
+ */
 class Context {
 
+    /**
+     * 获取get
+     * @param mixed $key 如果是单值，直接作为键；如果是数组，则是层次性的键
+     * @param mixed $default 如果要获取的值不存在就返回这个默认值，默认是null
+     * @return mixed
+     */
     public static function get($key=null, $default=null) {
         return self::getFromArr($_GET, $key, $default);
     }
 
+    /**
+     * 获取post
+     * @param mixed $key 如果是单值，直接作为键；如果是数组，则是层次性的键
+     * @param mixed $default 如果要获取的值不存在就返回这个默认值，默认是null
+     * @return mixed
+     */
     public static function post($key=null, $default=null) {
         return self::getFromArr($_POST, $key, $default);
     }
 
+    /**
+     * 获取server
+     * @param mixed $key 如果是单值，直接作为键；如果是数组，则是层次性的键
+     * @param mixed $default 如果要获取的值不存在就返回这个默认值，默认是null
+     * @return mixed
+     */
     public static function server($key=null, $default=null) {
         return self::getFromArr($_SERVER, $key, $default);
     }
 
+    /**
+     * 获取cookie
+     * @param mixed $key 如果是单值，直接作为键；如果是数组，则是层次性的键
+     * @param mixed $default 如果要获取的值不存在就返回这个默认值，默认是null
+     * @return mixed
+     */
     public static function cookie($key=null, $default=null) {
         return self::getFromArr($_COOKIE, $key, $default);
     }
 
+    /**
+     * 获取session
+     * @param mixed $key 如果是单值，直接作为键；如果是数组，则是层次性的键
+     * @param mixed $default 如果要获取的值不存在就返回这个默认值，默认是null
+     * @return mixed
+     */
     public static function session($key=null, $default=null) {
         if (!isset($_SESSION)) {
             session_start();
@@ -25,7 +59,14 @@ class Context {
         return self::getFromArr($_SESSION, $key, $default);
     }
 
-    public static function setCookie($key, $value, $time=false) {
+    /**
+     *
+     */
+    public static function setCookie($key, $value=null, $time=false) {
+        $key = self::cookieKey($key);
+
+        return $key;
+
         if ($time === false) {
             return setcookie($key, $value);
         }
@@ -34,7 +75,7 @@ class Context {
 
     /**
      * 设置Session
-     * @param mixed $key 如果是单值，直接作为session的键；如果是数组，则是层次性的
+     * @param mixed $key 如果是单值，直接作为键；如果是数组，则是层次性的键
      * @param mixed $value 要设置的值
      */
     public static function setSession($key, $value) {
@@ -80,13 +121,19 @@ class Context {
         $_SESSION[$key[0]] = $session;
     }
 
-    public static function flashCookie($key, $value) {
+    public static function flashCookie($key, $default=null) {
         $cookie = self::cookie($key, $default);
         self::delCookie($key);
         return $cookie;
     }
 
-    public static function flashSession($key, $value) {
+    /**
+     * 获取闪存session
+     * @param mixed $key 如果是单值，直接作为键；如果是数组，则是层次性的键
+     * @param mixed $default 如果要获取的值不存在就返回这个默认值，默认是null
+     * @return mixed
+     */
+    public static function flashSession($key, $default=null) {
         $session = self::session($key, $default);
         self::delSession($key);
         return $session;
@@ -96,6 +143,10 @@ class Context {
         setcookie($key, '', time() - 3600);
     }
 
+    /**
+     * 删除session
+     * @param mixed $key 如果是单值，直接作为键；如果是数组，则是层次性的键
+     */
     public static function delSession($key) {
         if (!isset($_SESSION)) {
             session_start();
@@ -104,11 +155,20 @@ class Context {
         self::delFromArr($_SESSION, $key);
     }
 
+    /**
+     * 从数组中获取值
+     * @param array $arr 超全局变量
+     * @param mixed $key 如果是单值，直接作为键；如果是数组，则是层次性的键
+     * @param mixed $default 如果要获取的值不存在就返回这个默认值，默认是null
+     * @return mixed
+     */
     protected static function getFromArr(&$arr, $key, $default) {
+        // key为null，获取整个数组
         if ($key === null) {
             return $arr;
         }
 
+        // key为单值，作为数组的键
         if (!is_array($key)) {
             if (!isset($arr[$key])) {
                 return $default;
@@ -116,11 +176,12 @@ class Context {
             return $arr[$key];
         }
 
-        // 空数组
+        // key是空数组，返回默认值
         if (!count($key)) {
             return $default;
         }
 
+        // key是数组，层次地去取值
         foreach ($key as $subKey) {
             if (!isset($arr[$subKey])) {
                 return $default;
@@ -131,20 +192,61 @@ class Context {
         return $arr;
     }
 
+    /**
+     * 从数组中删除值
+     * @param array $arr 超全局变量
+     * @param mixed $key 如果是单值，直接作为键；如果是数组，则是层次性的键
+     * @return mixed
+     */
     protected static function delFromArr(&$arr, $key) {
+        // key为单值，删除数组对应的键的值
         if (!is_array($key)) {
             unset($arr[$key]);
             return;
         }
 
-        foreach ($arr as $subKey) {
-            if (!isset($arr[$subKey])) {
-                return;
-            }
-            $arr = &$arr[$subKey];
+        // key为空数组，不执行动作
+        $count = count($key);
+        if (!$count) {
+            return;
         }
 
-        unset($arr);
+        // key是数组且有一个元素，以这个元素为键删除值
+        if ($count == 1) {
+            unset($arr[$key[0]]);
+        }
+
+        // key是数组且有多个元素，层次找到键并删除值
+        for ($i = 0; $i < $count - 1; $i++) {
+            if (!isset($arr[$key[$i]])) {
+                return;
+            }
+            $arr = &$arr[$key[$i]];
+        }
+
+        unset($arr[$key[$count-1]]);
+    }
+
+    protected function cookieKey($key) {
+        if (!is_array($key)) {
+            return $key;
+        }
+
+        $count = count($key);
+        if (!$count) {
+            return '';
+        }
+
+        if ($count == 1) {
+            return $key[0];
+        }
+
+        $tmpKey = $key[0];
+        for ($i = 1; $i < $count; $i++) {
+            $tmpKey .= "[{$key[$i]}]";
+        }
+
+        return $tmpKey;
     }
 
 }
