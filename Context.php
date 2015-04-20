@@ -32,30 +32,52 @@ class Context {
         return setcookie($key, $value, time()+$time);
     }
 
+    /**
+     * 设置Session
+     * @param mixed $key 如果是单值，直接作为session的键；如果是数组，则是层次性的
+     * @param mixed $value 要设置的值
+     */
     public static function setSession($key, $value) {
+        // session动态
         if (!isset($_SESSION)) {
             session_start();
         }
 
+        // $key不是数组
         if (!is_array($key)) {
             $_SESSION[$key] = $value;
             return;
         }
 
-        // 空数组
-        if (!$count = count($key)) {
+        // $key是空数组，不处理
+        $count = count($key);
+        if (!$count) {
             return;
         }
 
-        $tmpArr = &$_SESSION;
-        for ($i = 0; $i < $count - 1; $count++) {
-            $tmpArr[$key[$i]] = array();
-            $tmpArr = $tmpArr[$key[$i]];
+        // $key数组只有一个值的情况，把值当session的键
+        if ($count == 1) {
+            $_SESSION[$key[0]] = $value;
+            return;
         }
 
-        echo str_repeat('finish', 1024);flush();
+        // $key数组有多个值的情况
+        if (!isset($_SESSION[$key[0]])) {
+            $session = array();
+        } else {
+            $session = $_SESSION[$key[0]];
+        }
+        $tmpArr = &$session;
 
-        $tmpArr[$key[$count-1]] = $value;
+        for ($i = 1; $i < $count - 1; $i++) {
+            if (!isset($tmpArr[$i]) || !is_array($tmpArr[$i])) {
+                $tmpArr[$key[$i]] = array();
+            }
+            $tmpArr = &$tmpArr[$key[$i]];
+        }
+
+        $tmpArr[$key[$count - 1]] = $value;
+        $_SESSION[$key[0]] = $session;
     }
 
     public static function flashCookie($key, $value) {
