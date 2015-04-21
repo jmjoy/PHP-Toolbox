@@ -61,13 +61,22 @@ class ContextTest {
     }
 
     public function testCookie() {
-        var_dump(Context::setCookie('name'));
-        var_dump(Context::setCookie([]));
-        var_dump(Context::setCookie(['name']));
-        var_dump(Context::setCookie(['name', 0]));
-        var_dump(Context::setCookie(['name', 'key']));
-        var_dump(Context::setCookie(['name', 'key', 'value']));
-        var_dump(Context::setCookie(['name', 'key', 2]));
+        echo '肉眼看浏览器调试->resource->cookie<br />';
+
+        Context::setCookie('ka', 'va');
+        Context::setCookie([], 'empty');
+        Context::setCookie(['kb'], 'va');
+        Context::setCookie(['kc' , 'kc1'], 'vc');
+        Context::setCookie(['kd', 'kd1', 'kd2'], 'vd');
+        Context::setCookie(['ke', 'ke1', 'ke2', 'ke3'], 've');
+
+        var_dump(Context::cookie('ka'));
+        var_dump(Context::cookie(['kb']));
+        var_dump(Context::cookie(['kc', 'kc1']));
+        var_dump(Context::cookie(['kd', 'kd1', 'kd2']));
+        var_dump(Context::cookie(['ke', 'ke1', 'ke2', 'ke3']));
+        var_dump(Context::cookie('kz', 'empty'));
+        var_dump(Context::cookie(['kz'], 'empty'));
     }
 
     public function testSession() {

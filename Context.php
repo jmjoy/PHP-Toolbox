@@ -60,16 +60,24 @@ class Context {
     }
 
     /**
-     *
+     * 设置Cookie
+     * @param mixed $key 如果是单值，直接作为键；如果是数组，则是层次性的键
+     * @param mixed $value 要设置的值
+     * @param bool|int $time cookie保存的秒数，如果为false表示浏览器进程的Cookie
      */
-    public static function setCookie($key, $value=null, $time=false) {
+    public static function setCookie($key, $value, $time=false) {
         $key = self::cookieKey($key);
 
-        return $key;
+        // 键为空或者空数组，不要理会
+        if ($key === '') {
+            return;
+        }
 
+        // 表示浏览器进程的cookie
         if ($time === false) {
             return setcookie($key, $value);
         }
+
         return setcookie($key, $value, time()+$time);
     }
 
@@ -121,6 +129,13 @@ class Context {
         $_SESSION[$key[0]] = $session;
     }
 
+
+    /**
+     * 获取闪存cookie
+     * @param mixed $key 如果是单值，直接作为键；如果是数组，则是层次性的键
+     * @param mixed $default 如果要获取的值不存在就返回这个默认值，默认是null
+     * @return mixed
+     */
     public static function flashCookie($key, $default=null) {
         $cookie = self::cookie($key, $default);
         self::delCookie($key);
@@ -139,8 +154,12 @@ class Context {
         return $session;
     }
 
+    /**
+     * 删除cookie
+     * @param mixed $key 如果是单值，直接作为键；如果是数组，则是层次性的键
+     */
     public static function delCookie($key) {
-        setcookie($key, '', time() - 3600);
+        self::setCookie($key, '', -3600);
     }
 
     /**
@@ -227,6 +246,12 @@ class Context {
         unset($arr[$key[$count-1]]);
     }
 
+    /**
+     * 通过单值或数组组装cookie的键
+     * @param mixed 可以是单值，也可以是数组
+     * @return string 返回字符串的键值
+     *
+     */
     protected function cookieKey($key) {
         if (!is_array($key)) {
             return $key;
