@@ -77,7 +77,7 @@ class Filter {
      * @param string $aliasName 别名
      * @return $this
      */
-    public function allowEmpty($allow) {
+    public function allowEmpty($allow=true) {
         $this->rules[$this->curField]['allowEmpty'] = $allow;
         return $this;
     }
@@ -157,9 +157,10 @@ class Filter {
             }
 
             // 净化与改名该字段的输入数据
-            $key = $ruleKey;
             if (isset($ruleRow['alias'])) {
                 $key = $ruleRow['alias'];
+            } else {
+                $key = $ruleKey;
             }
             // 净化
             if (isset($ruleRow['sanitize'])) {
