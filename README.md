@@ -10,4 +10,4 @@
 
 ## 协议
 
-[MIT](https://github.com/jmjoy/PHP-Toolbox/blob/master/LICENSE)
+- [MIT](https://github.com/jmjoy/PHP-Toolbox/blob/master/LICENSE)

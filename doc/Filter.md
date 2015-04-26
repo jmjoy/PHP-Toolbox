@@ -68,3 +68,52 @@
         $result = $this->getResult();
         // ...
     }
+
+### 链式方法
+
+field, alias, emptyMsg, allowEmpty, validate, sanitize
+
+其中filed为链式方法的头部，validate、sanitize可以调用多次
+
+validate接收四个参数，前两个是必须的，第一个代表错误信息，当检验不通过时使用;
+第二个为验证函数，实际上是调用call_user_func_array()的第一个参数，比如使用PHP自带的检验
+函数如“is_numeric”，或者是Filter的类方法或你自己定义的类方法如”Filter::xxx”、“MyClass::xxx”，
+或者是所在类的成员方法如[$this, “xxx”];第三个可选参数是要传给检验函数的除要检验的值之外的参数，
+如果有多个参数可以使用数组；第四个可选参数表示是够反转检验结果。
+
+sanitize接收两个参数，第二个可选，和validate的第二个和第三个参数类似。
+
+### 检验方法
+
+check, getResult, getError
+
+check返回布尔值，表示检验成功与否。成功的话使用getResult可以得到经过alias和sanitize（如果有）的
+结果数组，否则使用getError将得到包含filed和msg两个字段的数组。
+
+### 这个工具类自带的检验&净化方法
+
+#### 检验方法
+
+Filter::regex
+
+Filter::equal
+
+Filter::strLength
+
+Filter::numBetween
+
+Filter::checkInt
+
+Filter::checkFloat
+
+Filter::checkEmail
+
+Filter::checkUrl
+
+Filter::checkPhone
+
+Filter::chLength
+
+#### 净化方法
+
+Filter::transDate
